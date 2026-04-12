@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('profil_competence', function (Blueprint $table) {
+        Schema::create('candidatures', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('offre_id')->constrained()->onDelete('cascade');
             $table->foreignId('profil_id')->constrained()->onDelete('cascade');
-            $table->foreignId('competence_id')->constrained()->onDelete('cascade');
-            $table->enum('niveau', ['debutant', 'intermediaire', 'expert']);
-            $table->primary(['profil_id', 'competence_id']);
+            $table->text('message')->nullable();
+            $table->enum('statut', ['en_attente', 'acceptee', 'refusee'])->default('en_attente');
+            $table->timestamps();
         });
     }
 
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('profil_competence');
+        Schema::dropIfExists('candidatures');
     }
 };
