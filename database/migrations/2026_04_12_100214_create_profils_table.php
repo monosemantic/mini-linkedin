@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('titre');
             $table->text('bio')->nullable();
             $table->string('localisation')->nullable();
-            $table->boolean('disponible')->default('true');
+            $table->boolean('disponible')->default(true);
             $table->timestamps();
         });
     }
