@@ -24,12 +24,12 @@ class DatabaseSeeder extends Seeder
         $niveaux = ['debutant', 'intermediaire', 'expert'];
 
         // 2 admins
-        User::factory()->create([
+        User::factory(2)->create([
             'password' => Hash::make('password'),
             'role' => 'admin',
         ]);
 
-        // 5 recruteurs avec 2-3 offres chacum
+        // 5 recruteurs avec 2-3 offres chacun
         User::factory(5)->create([
             'password' => Hash::make('password'),
             'role' => 'recruteur'
