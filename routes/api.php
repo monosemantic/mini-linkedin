@@ -7,7 +7,12 @@ use App\Http\Controllers\AdminController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:api');
+
+Route::middleware('auth:api')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
+    Route::get('/me', [AuthController::class, 'me']);
+});
 
 Route::get('/offres', [OffreController::class, 'index']);
 Route::get('/offres/{offre}', [OffreController::class, 'show']);
