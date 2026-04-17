@@ -22,6 +22,11 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/profil', [ProfilController::class, 'update']);
     Route::post('/profil/competences', [ProfilController::class, 'addCompetence']);
     Route::delete('/profil/competences/{competenceId}', [ProfilController::class, 'removeCompetence']);
+    // Candidatures
+    Route::post('/offres/{offre}/candidater', [CandidatureController::class, 'postuler']);
+    Route::get('/mes-candidatures', [CandidatureController::class, 'mesCandidatures']);
+    Route::get('/offres/{offre}/candidatures', [CandidatureController::class, 'candidaturesRecues']);
+    Route::patch('/candidatures/{candidature}/statut', [CandidatureController::class, 'changerStatut']);
 });
 
 // tout le monde peut voir les offres
