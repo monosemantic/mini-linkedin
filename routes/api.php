@@ -1,11 +1,10 @@
 <?php
 
-
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfilController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OffreController;
 use App\Http\Controllers\AdminController;
-
 
 // Routes publiques
 Route::post('/register', [AuthController::class, 'register']);
@@ -13,9 +12,16 @@ Route::post('/login',    [AuthController::class, 'login']);
 
 // Routes protegees
 Route::middleware('auth:api')->group(function () {
+    // Auth protected routes
     Route::post('/logout',  [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::get('/me',       [AuthController::class, 'me']);
+    // Profile routes
+    Route::post('/profil',[ProfilController::class , 'store']);
+    Route::get('/profil',[ProfilController::class , 'show']);
+    Route::put('/profil', [ProfilController::class, 'update']);
+    Route::post('/profil/competences', [ProfilController::class, 'addCompetence']);
+    Route::delete('/profil/competences/{competenceId}', [ProfilController::class, 'removeCompetence']);
 });
 
 // tout le monde peut voir les offres
