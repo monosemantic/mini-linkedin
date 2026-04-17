@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Profil;
 use App\Http\Requests\StoreProfilRequest;
+use App\Http\Requests\UpdateProfilRequest;
 
 class ProfilController extends Controller
 {
@@ -36,7 +37,7 @@ class ProfilController extends Controller
         ]);
         return response()->json([
             'message' => 'Profile created successfully',
-            'profile' => $profil
+            'profil' => $profil
         ], 201);
     }
     public function show()
@@ -61,7 +62,7 @@ class ProfilController extends Controller
             'profil' => $profil
         ]);
     }
-    public function update( StoreProfilRequest $request)
+    public function update( UpdateProfilRequest $request)
     {
         $user = auth()->user();
 
@@ -70,7 +71,6 @@ class ProfilController extends Controller
             'message' => 'Not authenticated'
             ], 401);
         }
-        response()->json(["message"=> true]);
         $profil = $user->profil;
 
         if (!$profil) {
