@@ -27,6 +27,9 @@ class OffreController extends Controller
 
     // get detail de l'offre
     public function show(Offre $offre){
+        if (!$offre->actif && $offre->user_id !== auth()->id()) {
+            abort(404);
+        }
         return response()->json($offre);
     }
 
