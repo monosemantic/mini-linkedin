@@ -15,11 +15,7 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-            try {
-            if (!auth()->check()) {
-                return response()->json(['message' => 'Non authentifie'], 401);
-            }
-        } catch (\Exception $e) {
+        if (!auth()->check()) {
             return response()->json(['message' => 'Non authentifie'], 401);
         }
 
