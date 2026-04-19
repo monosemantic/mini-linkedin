@@ -12,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 
 use App\Models\Candidature;
 
-class StatuCandidatureMis
+class StatutCandidatureMis
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

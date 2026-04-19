@@ -5,6 +5,16 @@ use App\Http\Controllers\ProfilController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OffreController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CandidatureController;
+
+
+
+// 401 Unauthorized
+Route::get('/login', function () {
+    return response()->json(['message' => 'Non authentifié'], 401);
+})->name('login');
+
+Route::post('/login', [AuthController::class, 'login']);
 
 // Routes publiques
 Route::post('/register', [AuthController::class, 'register']);
