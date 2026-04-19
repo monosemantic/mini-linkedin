@@ -9,7 +9,7 @@ use App\Http\Requests\UpdateProfilRequest;
 
 class ProfilController extends Controller
 {
-    public function store( StoreProfilRequest $request)
+    public function store(StoreProfilRequest $request)
     {
         $user = auth()->user();
 
@@ -46,15 +46,15 @@ class ProfilController extends Controller
 
         if (!$user) {
             return response()->json([
-            'message' => 'Not authenticated'
+                'message' => 'Not authenticated'
             ], 401);
         }
 
-        $profil = $user->profil; 
+        $profil = $user->profil;
 
         if (!$profil) {
             return response()->json([
-            'message' => 'Profile not found'
+                'message' => 'Profile not found'
             ], 404);
         }
 
@@ -62,34 +62,34 @@ class ProfilController extends Controller
             'profil' => $profil
         ]);
     }
-    public function update( UpdateProfilRequest $request)
+    public function update(UpdateProfilRequest $request)
     {
         $user = auth()->user();
 
         if (!$user) {
             return response()->json([
-            'message' => 'Not authenticated'
+                'message' => 'Not authenticated'
             ], 401);
         }
         $profil = $user->profil;
 
         if (!$profil) {
             return response()->json([
-            'message' => 'Profile not found'
+                'message' => 'Profile not found'
             ], 404);
         }
 
         $data = $request->validated();
         $profil->update([
-        "titre" => $data["titre"] ?? $profil->titre,
-        "bio" => $data["bio"] ?? $profil->bio,
-        "localisation" => $data["localisation"] ?? $profil->localisation,
-        "disponible" => $data["disponible"] ?? $profil->disponible,
+            "titre" => $data["titre"] ?? $profil->titre,
+            "bio" => $data["bio"] ?? $profil->bio,
+            "localisation" => $data["localisation"] ?? $profil->localisation,
+            "disponible" => $data["disponible"] ?? $profil->disponible,
         ]);
 
         return response()->json([
-        'message' => 'Profile updated successfully',
-        'profil' => $profil
+            'message' => 'Profile updated successfully',
+            'profil' => $profil
         ]);
     }
     public function addCompetence(Request $request)
@@ -110,6 +110,15 @@ class ProfilController extends Controller
             'competence_id' => 'required|exists:competences,id'
         ]);
 
+        $alreadyAdded = $profil->competences()
+            ->wherePivot('competence_id', $data['competence_id'])
+            ->exists();
+
+        if ($alreadyAdded) {
+            return response()->json([
+                'message' => 'Competence already added'
+            ], 409);
+        }
 
         $profil->competences()->attach($data['competence_id']);
 
@@ -123,7 +132,7 @@ class ProfilController extends Controller
 
         if (!$user) {
             return response()->json([
-            'message' => 'Not authenticated'
+                'message' => 'Not authenticated'
             ], 401);
         }
 
@@ -131,14 +140,14 @@ class ProfilController extends Controller
 
         if (!$profil) {
             return response()->json([
-            'message' => 'Profile not found'
+                'message' => 'Profile not found'
             ], 404);
         }
-    
+
         $profil->competences()->detach($competenceId);
 
         return response()->json([
-        'message' => 'Competence removed successfully'
+            'message' => 'Competence removed successfully'
         ]);
-}
+    }
 }
