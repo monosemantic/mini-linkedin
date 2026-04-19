@@ -24,7 +24,13 @@ class DatabaseSeeder extends Seeder
         $niveaux = ['debutant', 'intermediaire', 'expert'];
 
         // 2 admins
-        User::factory(2)->create([
+        User::factory()->create([
+            'name' => 'admin',
+            'email' => 'admin@test.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin'
+        ]);
+        User::factory()->create([
             'password' => Hash::make('password'),
             'role' => 'admin',
         ]);

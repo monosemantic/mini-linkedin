@@ -1,0 +1,1521 @@
+{
+  "info": {
+    "_postman_id": "mini-linkedin-v2",
+    "name": "Mini LinkedIn API",
+    "description": "Collection complète pour l'API Mini LinkedIn.\n\nVariables d'environnement requises :\n- base_url : ex. http://localhost:8000\n- candidat_token : auto-rempli après login candidat\n- recruteur_token : auto-rempli après login recruteur\n- admin_token : auto-rempli après login admin\n- token : token actif courant\n- offre_id : ID d'une offre (sauvegardé automatiquement)\n- candidature_id : ID d'une candidature (sauvegardé automatiquement)\n- competence_id : ID d'une compétence (à remplir manuellement, ex: 1)\n- user_id : ID d'un utilisateur (sauvegardé automatiquement)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": { "type": "text/javascript", "exec": [""] }
+    },
+    {
+      "listen": "test",
+      "script": { "type": "text/javascript", "exec": [""] }
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Inscription, connexion, déconnexion et gestion du token JWT.",
+      "item": [
+        {
+          "name": "Register - Candidat",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('access_token present', () => pm.expect(json).to.have.property('access_token'));",
+                  "pm.environment.set('candidat_token', json.access_token);",
+                  "pm.environment.set('token', json.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Jean Candidat\",\n    \"email\": \"candidat@test.com\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\",\n    \"role\": \"candidat\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register"]
+            },
+            "description": "Crée un compte candidat. Le token est sauvegardé dans candidat_token."
+          }
+        },
+        {
+          "name": "Register - Recruteur",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('recruteur_token', json.access_token);",
+                  "pm.environment.set('token', json.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Marie Recruteur\",\n    \"email\": \"recruteur@test.com\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\",\n    \"role\": \"recruteur\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register"]
+            },
+            "description": "Crée un compte recruteur. Le token est sauvegardé dans recruteur_token."
+          }
+        },
+        {
+          "name": "Register - Email deja pris (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Doublon\",\n    \"email\": \"candidat@test.com\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\",\n    \"role\": \"candidat\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register"]
+            },
+            "description": "Doit retourner 422 car l'email est déjà utilisé."
+          }
+        },
+        {
+          "name": "Register - Role invalide (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Hacker\",\n    \"email\": \"hacker@test.com\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\",\n    \"role\": \"admin\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register"]
+            },
+            "description": "S'auto-inscrire comme admin n'est pas autorisé. Doit retourner 422."
+          }
+        },
+        {
+          "name": "Login - Candidat",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('access_token present', () => pm.expect(json).to.have.property('access_token'));",
+                  "pm.environment.set('candidat_token', json.access_token);",
+                  "pm.environment.set('token', json.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"candidat@test.com\",\n    \"password\": \"password\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Connexion candidat. Sauvegarde le token dans candidat_token et token."
+          }
+        },
+        {
+          "name": "Login - Recruteur",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('recruteur_token', json.access_token);",
+                  "pm.environment.set('token', json.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"recruteur@test.com\",\n    \"password\": \"password\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Connexion recruteur. Sauvegarde le token dans recruteur_token et token."
+          }
+        },
+        {
+          "name": "Login - Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('admin_token', json.access_token);",
+                  "pm.environment.set('token', json.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@test.com\",\n    \"password\": \"password\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Connexion admin. Le compte doit exister via le seeder. Sauvegarde le token dans admin_token."
+          }
+        },
+        {
+          "name": "Login - Mauvais mot de passe (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"candidat@test.com\",\n    \"password\": \"mauvais_mdp\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Doit retourner 401 si les identifiants sont incorrects."
+          }
+        },
+        {
+          "name": "Me - Utilisateur connecte",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Champ email present', () => pm.expect(json).to.have.property('email'));",
+                  "pm.environment.set('user_id', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "me"]
+            },
+            "description": "Retourne les infos de l'utilisateur actuellement connecté."
+          }
+        },
+        {
+          "name": "Me - Sans token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "me"]
+            },
+            "description": "Doit retourner 401 si aucun token n'est fourni."
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('token', json.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "refresh"]
+            },
+            "description": "Rafraichit le JWT et met à jour token dans l'environnement."
+          }
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "logout"]
+            },
+            "description": "Invalide le token JWT de l'utilisateur connecté."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profil",
+      "description": "CRUD du profil candidat et gestion des competences.\n\nUtiliser candidat_token comme token avant ces requetes.",
+      "item": [
+        {
+          "name": "Creer son profil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Profil cree', () => pm.expect(json.profil).to.have.property('id'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titre\": \"Developpeur Full Stack\",\n    \"bio\": \"Etudiant en genie informatique passionne par le developpement web et les APIs REST.\",\n    \"localisation\": \"Casablanca\",\n    \"disponible\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profil",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profil"]
+            },
+            "description": "Crée le profil du candidat connecté. Ne peut être appelé qu'une seule fois par utilisateur."
+          }
+        },
+        {
+          "name": "Creer profil - Deja existant (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titre\": \"Second profil\",\n    \"disponible\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profil",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profil"]
+            },
+            "description": "Doit retourner 409 si le profil existe déjà."
+          }
+        },
+        {
+          "name": "Creer profil - Titre manquant (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"bio\": \"Sans titre\",\n    \"disponible\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profil",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profil"]
+            },
+            "description": "Le champ titre est obligatoire. Doit retourner 422."
+          }
+        },
+        {
+          "name": "Consulter son profil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Profil present', () => pm.expect(json).to.have.property('profil'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/profil",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profil"]
+            },
+            "description": "Retourne le profil de l'utilisateur connecté."
+          }
+        },
+        {
+          "name": "Modifier son profil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Localisation mise a jour', () => pm.expect(json.profil.localisation).to.eql('Rabat'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"localisation\": \"Rabat\",\n    \"disponible\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profil",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profil"]
+            },
+            "description": "Met à jour partiellement le profil. Tous les champs sont optionnels (sometimes)."
+          }
+        },
+        {
+          "name": "Ajouter une competence",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"competence_id\": {{competence_id}}\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profil/competences",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profil", "competences"]
+            },
+            "description": "Associe une compétence existante au profil. Définir competence_id dans l'environnement (ex: 1)."
+          }
+        },
+        {
+          "name": "Ajouter competence - ID inexistant (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"competence_id\": 99999\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profil/competences",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profil", "competences"]
+            },
+            "description": "Doit retourner 422 si la compétence n'existe pas en base."
+          }
+        },
+        {
+          "name": "Retirer une competence",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/profil/competences/{{competence_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profil", "competences", "{{competence_id}}"]
+            },
+            "description": "Détache la compétence du profil."
+          }
+        },
+        {
+          "name": "Profil - Sans token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/profil",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profil"]
+            },
+            "description": "Doit retourner 401 sans token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Offres",
+      "description": "Gestion des offres d'emploi. La liste et le detail sont publics. Le CRUD est réservé aux recruteurs.",
+      "item": [
+        {
+          "name": "Liste des offres actives",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Pagination presente', () => pm.expect(json).to.have.property('data'));",
+                  "if (json.data.length > 0) {",
+                  "    pm.environment.set('offre_id', json.data[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/offres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres"]
+            },
+            "description": "Liste toutes les offres actives, paginées (10 par page), triées par date de création. Sauvegarde le premier offre_id."
+          }
+        },
+        {
+          "name": "Liste des offres - Filtre localisation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/offres?localisation=Casablanca",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres"],
+              "query": [{ "key": "localisation", "value": "Casablanca" }]
+            },
+            "description": "Filtre les offres par localisation (LIKE %Casablanca%)."
+          }
+        },
+        {
+          "name": "Liste des offres - Filtre type",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/offres?type=CDI",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres"],
+              "query": [{ "key": "type", "value": "CDI" }]
+            },
+            "description": "Filtre les offres par type. Valeurs acceptées : CDI, CDD, stage."
+          }
+        },
+        {
+          "name": "Liste des offres - Page 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/offres?page=2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres"],
+              "query": [{ "key": "page", "value": "2" }]
+            },
+            "description": "Deuxième page de la pagination."
+          }
+        },
+        {
+          "name": "Detail d'une offre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Champ titre present', () => pm.expect(json).to.have.property('titre'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/offres/{{offre_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres", "{{offre_id}}"]
+            },
+            "description": "Retourne le détail d'une offre spécifique via offre_id."
+          }
+        },
+        {
+          "name": "Creer une offre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Offre creee', () => pm.expect(json).to.have.property('id'));",
+                  "pm.environment.set('offre_id', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titre\": \"Developpeur Laravel Senior\",\n    \"description\": \"Nous recherchons un developpeur Laravel avec 3 ans d'experience minimum pour rejoindre notre equipe produit.\",\n    \"localisation\": \"Casablanca\",\n    \"type\": \"CDI\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres"]
+            },
+            "description": "Crée une nouvelle offre. Réservé aux recruteurs. Sauvegarde offre_id pour les tests suivants."
+          }
+        },
+        {
+          "name": "Creer offre - Champs manquants (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titre\": \"Offre incomplete\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres"]
+            },
+            "description": "description, localisation et type sont obligatoires. Doit retourner 422."
+          }
+        },
+        {
+          "name": "Creer offre - Type invalide (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titre\": \"Dev\",\n    \"description\": \"Desc\",\n    \"localisation\": \"Casa\",\n    \"type\": \"FREELANCE\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres"]
+            },
+            "description": "Le type doit être CDI, CDD ou stage. Doit retourner 422."
+          }
+        },
+        {
+          "name": "Creer offre - Role candidat interdit (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titre\": \"Tentative\",\n    \"description\": \"Un candidat ne peut pas publier d'offre.\",\n    \"localisation\": \"Rabat\",\n    \"type\": \"stage\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres"]
+            },
+            "description": "Un candidat ne peut pas créer une offre. Doit retourner 403."
+          }
+        },
+        {
+          "name": "Modifier une offre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titre\": \"Developpeur Laravel Senior (MAJ)\",\n    \"description\": \"Description mise a jour avec nouvelles exigences.\",\n    \"localisation\": \"Casablanca\",\n    \"type\": \"CDD\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offres/{{offre_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres", "{{offre_id}}"]
+            },
+            "description": "Met à jour l'offre. Seul le recruteur propriétaire peut modifier."
+          }
+        },
+        {
+          "name": "Modifier offre - Non proprietaire (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titre\": \"Tentative de modification\",\n    \"description\": \"Ne doit pas passer.\",\n    \"localisation\": \"Marrakech\",\n    \"type\": \"stage\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offres/{{offre_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres", "{{offre_id}}"]
+            },
+            "description": "Un non-propriétaire ne peut pas modifier l'offre. Doit retourner 403."
+          }
+        },
+        {
+          "name": "Supprimer une offre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/offres/{{offre_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres", "{{offre_id}}"]
+            },
+            "description": "Supprime l'offre. Seul le recruteur propriétaire peut supprimer. Recréer une offre avant de tester les candidatures."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Candidatures",
+      "description": "Postuler à une offre, consulter ses candidatures, gérer les statuts.\n\nS'assurer qu'une offre active existe (offre_id) et que le candidat a un profil.",
+      "item": [
+        {
+          "name": "Postuler a une offre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Candidature creee', () => pm.expect(json).to.have.property('id'));",
+                  "pm.environment.set('candidature_id', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"message\": \"Je suis tres interesse par ce poste et je pense avoir les competences requises pour contribuer a votre equipe.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offres/{{offre_id}}/candidater",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres", "{{offre_id}}", "candidater"]
+            },
+            "description": "Postule à l'offre offre_id. Sauvegarde candidature_id pour les tests suivants."
+          }
+        },
+        {
+          "name": "Postuler - Double candidature (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"message\": \"Je postule une deuxieme fois.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offres/{{offre_id}}/candidater",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres", "{{offre_id}}", "candidater"]
+            },
+            "description": "On ne peut postuler qu'une seule fois à la même offre. Doit retourner 422."
+          }
+        },
+        {
+          "name": "Postuler - Recruteur interdit (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"message\": \"Un recruteur tente de postuler.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offres/{{offre_id}}/candidater",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres", "{{offre_id}}", "candidater"]
+            },
+            "description": "Seul un candidat peut postuler. Doit retourner 403."
+          }
+        },
+        {
+          "name": "Mes candidatures",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Reponse est un tableau', () => pm.expect(json).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mes-candidatures",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mes-candidatures"]
+            },
+            "description": "Retourne toutes les candidatures du candidat connecté avec les offres associées."
+          }
+        },
+        {
+          "name": "Mes candidatures - Sans token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mes-candidatures",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mes-candidatures"]
+            },
+            "description": "Doit retourner 401 sans token."
+          }
+        },
+        {
+          "name": "Candidatures recues pour une offre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Reponse est un tableau', () => pm.expect(json).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/offres/{{offre_id}}/candidatures",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres", "{{offre_id}}", "candidatures"]
+            },
+            "description": "Retourne toutes les candidatures reçues pour l'offre. Seul le recruteur propriétaire y a accès."
+          }
+        },
+        {
+          "name": "Candidatures recues - Non proprietaire (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/offres/{{offre_id}}/candidatures",
+              "host": ["{{base_url}}"],
+              "path": ["api", "offres", "{{offre_id}}", "candidatures"]
+            },
+            "description": "Un candidat ne peut pas consulter les candidatures d'une offre. Doit retourner 403."
+          }
+        },
+        {
+          "name": "Changer le statut - Acceptee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Statut mis a jour', () => pm.expect(json.statut).to.eql('acceptee'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"statut\": \"acceptee\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/candidatures/{{candidature_id}}/statut",
+              "host": ["{{base_url}}"],
+              "path": ["api", "candidatures", "{{candidature_id}}", "statut"]
+            },
+            "description": "Accepte la candidature. Déclenche l'event StatutCandidatureMis qui écrit dans candidatures.log."
+          }
+        },
+        {
+          "name": "Changer le statut - Refusee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Statut mis a jour', () => pm.expect(json.statut).to.eql('refusee'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"statut\": \"refusee\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/candidatures/{{candidature_id}}/statut",
+              "host": ["{{base_url}}"],
+              "path": ["api", "candidatures", "{{candidature_id}}", "statut"]
+            },
+            "description": "Refuse la candidature."
+          }
+        },
+        {
+          "name": "Changer statut - Valeur invalide (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"statut\": \"en_cours\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/candidatures/{{candidature_id}}/statut",
+              "host": ["{{base_url}}"],
+              "path": ["api", "candidatures", "{{candidature_id}}", "statut"]
+            },
+            "description": "Le statut doit être en_attente, acceptee ou refusee. Doit retourner 422."
+          }
+        },
+        {
+          "name": "Changer statut - Non proprietaire (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"statut\": \"acceptee\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/candidatures/{{candidature_id}}/statut",
+              "host": ["{{base_url}}"],
+              "path": ["api", "candidatures", "{{candidature_id}}", "statut"]
+            },
+            "description": "Un candidat ne peut pas changer le statut d'une candidature. Doit retourner 403."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Administration",
+      "description": "Routes réservées exclusivement aux admins.\n\nUtiliser admin_token comme token avant ces requetes.",
+      "item": [
+        {
+          "name": "Liste de tous les utilisateurs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Reponse est un tableau', () => pm.expect(json).to.be.an('array'));",
+                  "if (json.length > 0) {",
+                  "    pm.environment.set('user_id', json[json.length - 1].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users"]
+            },
+            "description": "Retourne tous les utilisateurs. Sauvegarde le dernier user_id dans l'environnement."
+          }
+        },
+        {
+          "name": "Liste utilisateurs - Non admin (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{candidat_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users"]
+            },
+            "description": "Un non-admin est refusé. Doit retourner 403."
+          }
+        },
+        {
+          "name": "Liste utilisateurs - Sans token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users"]
+            },
+            "description": "Doit retourner 401 sans token."
+          }
+        },
+        {
+          "name": "Activer ou desactiver une offre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Champ actif present', () => pm.expect(json).to.have.property('actif'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/offres/{{offre_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "offres", "{{offre_id}}"]
+            },
+            "description": "Bascule l'état actif/inactif de l'offre (toggle). Appeler deux fois pour revenir à l'état initial."
+          }
+        },
+        {
+          "name": "Toggle offre - Non admin (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/offres/{{offre_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "offres", "{{offre_id}}"]
+            },
+            "description": "Un recruteur ne peut pas accéder aux routes admin. Doit retourner 403."
+          }
+        },
+        {
+          "name": "Supprimer un compte utilisateur",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users", "{{user_id}}"]
+            },
+            "description": "Supprime le compte user_id. Utiliser un ID de test issu du seeder pour ne pas supprimer un compte utile."
+          }
+        },
+        {
+          "name": "Supprimer utilisateur - Non admin (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{recruteur_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users", "{{user_id}}"]
+            },
+            "description": "Un non-admin ne peut pas supprimer un utilisateur. Doit retourner 403."
+          }
+        }
+      ]
+    }
+  ]
+}
