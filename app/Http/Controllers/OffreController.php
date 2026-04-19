@@ -9,7 +9,8 @@ use Illuminate\Http\Request;
 class OffreController extends Controller
 {
     // get liste
-    public function index(Request $request){
+    public function index(Request $request)
+    {
 
         $query = Offre::where('actif', true)
             ->orderBy('created_at', 'desc');
@@ -26,7 +27,8 @@ class OffreController extends Controller
     }
 
     // get detail de l'offre
-    public function show(Offre $offre){
+    public function show(Offre $offre)
+    {
         if (!$offre->actif && $offre->user_id !== auth()->id()) {
             abort(404);
         }
@@ -34,7 +36,8 @@ class OffreController extends Controller
     }
 
     // post cree un offre
-    public function store(StoreOffreRequest $request){
+    public function store(StoreOffreRequest $request)
+    {
         $offre = Offre::create([
             ...$request->validated(),
             'user_id' => auth()->id(),
@@ -44,7 +47,8 @@ class OffreController extends Controller
     }
 
     // put modifier une offre
-    public function update(StoreOffreRequest $request, Offre $offre){
+    public function update(StoreOffreRequest $request, Offre $offre)
+    {
         if ($offre->user_id !== auth()->id()) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -53,7 +57,8 @@ class OffreController extends Controller
     }
 
     // delete supprimer une offre
-    public function destroy(Offre $offre){
+    public function destroy(Offre $offre)
+    {
         if ($offre->user_id !== auth()->id()) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
