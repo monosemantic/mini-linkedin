@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Event;
 use App\Events\CandidatureDeposee;
 use App\Events\StatutCandidatureMis;
 use App\Listeners\LogCandidatureDeposee;
-use App\Listeners\LogStatutCandidature;
+use App\Listeners\LogStatutCandidatureMis;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +28,6 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         Event::listen(CandidatureDeposee::class, LogCandidatureDeposee::class);
-        Event::listen(StatutCandidatureMis::class, LogStatutCandidature::class);
+        Event::listen(StatutCandidatureMis::class, LogStatutCandidatureMis::class);
     }
 }

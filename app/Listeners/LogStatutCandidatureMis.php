@@ -2,13 +2,10 @@
 
 namespace App\Listeners;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
-
 use App\Events\StatutCandidatureMis;
 use Illuminate\Support\Facades\Log;
 
-class LogStatutCandidature
+class LogStatutCandidatureMis
 {
     /**
      * Create the event listener.
