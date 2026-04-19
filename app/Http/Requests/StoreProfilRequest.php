@@ -17,7 +17,7 @@ class StoreProfilRequest extends FormRequest
             "titre" => "required|string|max:50",
             "bio" => "nullable|string|max:200",
             "localisation" => "nullable|string|max:100",
-            "disponible" => "boolean",
+            "disponible" => "sometimes|boolean",
         ];
     }
 }

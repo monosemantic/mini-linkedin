@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Profil;
 use App\Http\Requests\StoreProfilRequest;
 use App\Http\Requests\UpdateProfilRequest;
+use App\Http\Requests\StoreCompetenceRequest;
 
 class ProfilController extends Controller
 {
@@ -14,29 +15,35 @@ class ProfilController extends Controller
         $user = auth()->user();
 
         if (!$user) {
-            return response()->json(['message' => 'Not authenticated'], 401);
+            return response()->json(['message' => 'Non authentifié'], 401);
         }
 
-        // check profile exists
+        // vérifier que le profil existe
         if ($user->profil) {
             return response()->json([
-                'message' => 'Profile already exists'
+                'message' => 'Le profil existe déjà'
             ], 409);
         }
 
-        // validate using Form request
+        // valider en utilisant une requête de formulaire
         $data = $request->validated();
 
-        // create profile
-        $profil = Profil::create([
+        // remplir les données du profil
+        $profilData = [
             "user_id" => $user->id,
             "titre" => $data["titre"],
             "bio" => $data["bio"] ?? null,
             "localisation" => $data["localisation"] ?? null,
-            "disponible" => $data["disponible"] ?? false,
-        ]);
+        ];
+
+        if (array_key_exists("disponible", $data)) {
+            $profilData["disponible"] = $data["disponible"];
+        }
+        // créer le profil
+        $profil = Profil::create($profilData);
+
         return response()->json([
-            'message' => 'Profile created successfully',
+            'message' => 'Profil créé avec succès',
             'profil' => $profil
         ], 201);
     }
@@ -46,7 +53,7 @@ class ProfilController extends Controller
 
         if (!$user) {
             return response()->json([
-                'message' => 'Not authenticated'
+                'message' => 'Non authentifié',
             ], 401);
         }
 
@@ -54,7 +61,7 @@ class ProfilController extends Controller
 
         if (!$profil) {
             return response()->json([
-                'message' => 'Profile not found'
+                'message' => 'Profil introuvable',
             ], 404);
         }
 
@@ -68,14 +75,14 @@ class ProfilController extends Controller
 
         if (!$user) {
             return response()->json([
-                'message' => 'Not authenticated'
+                'message' => 'Non authentifié',
             ], 401);
         }
         $profil = $user->profil;
 
         if (!$profil) {
             return response()->json([
-                'message' => 'Profile not found'
+                'message' => 'Profil introuvable',
             ], 404);
         }
 
@@ -88,42 +95,39 @@ class ProfilController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Profile updated successfully',
+            'message' => 'Profil mis à jour avec succès',
             'profil' => $profil
         ]);
     }
-    public function addCompetence(Request $request)
+    public function addCompetence(StoreCompetenceRequest $request)
     {
         $user = auth()->user();
 
         if (!$user) {
-            return response()->json(['message' => 'Not authenticated'], 401);
+            return response()->json(['message' => 'Non authentifié'], 401);
         }
 
         $profil = $user->profil;
 
         if (!$profil) {
-            return response()->json(['message' => 'Profile not found'], 404);
+            return response()->json(['message' => 'Profil introuvable'], 404);
         }
 
-        $data = $request->validate([
-            'competence_id' => 'required|exists:competences,id'
-        ]);
-
+        $data = $request->validated();
         $alreadyAdded = $profil->competences()
             ->wherePivot('competence_id', $data['competence_id'])
             ->exists();
 
         if ($alreadyAdded) {
             return response()->json([
-                'message' => 'Competence already added'
+                'message' => 'Compétence déjà ajoutée'
             ], 409);
         }
 
-        $profil->competences()->attach($data['competence_id']);
+        $profil->competences()->attach($data['competence_id'] , ['niveau' => $data['niveau']]);
 
         return response()->json([
-            'message' => 'Competence added successfully'
+            'message' => 'Compétence ajoutée avec succès'
         ]);
     }
     public function removeCompetence($competenceId)
@@ -132,7 +136,7 @@ class ProfilController extends Controller
 
         if (!$user) {
             return response()->json([
-                'message' => 'Not authenticated'
+                'message' => 'Non authentifié'
             ], 401);
         }
 
@@ -140,14 +144,14 @@ class ProfilController extends Controller
 
         if (!$profil) {
             return response()->json([
-                'message' => 'Profile not found'
+                'message' => 'Profil introuvable'
             ], 404);
         }
 
         $profil->competences()->detach($competenceId);
 
         return response()->json([
-            'message' => 'Competence removed successfully'
+            'message' => 'Compétence supprimée avec succès' 
         ]);
     }
 }
