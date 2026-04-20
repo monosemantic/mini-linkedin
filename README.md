@@ -18,7 +18,7 @@ Projet réalisé dans le cadre du cours Technologies Backend.
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://github.com/<votre-username>/mini-linkedin.git
+git clone https://github.com/monosemantic/mini-linkedin.git
 cd mini-linkedin
 
 # 2. Installer les dépendances
