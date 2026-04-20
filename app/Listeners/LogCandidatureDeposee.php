@@ -7,17 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 class LogCandidatureDeposee
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
-     * Handle the event.
-     */
+    /** Ecrit dans le log les details d une candidature deposee. */
     public function handle(CandidatureDeposee $event): void
     {
         $candidature = $event->candidature->load('profil.user', 'offre');

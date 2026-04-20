@@ -10,33 +10,33 @@ use Illuminate\Http\Request;
 
 class CandidatureController extends Controller
 {
-    // POST /api/offres/{offre}/candidater
+    /** Permet a un candidat de postuler a une offre active. */
     public function postuler(Request $request, Offre $offre)
     {
         $user = auth()->user();
 
-        // Only candidats can apply
+        // Seuls les candidats peuvent postuler.
         if ($user->role !== 'candidat') {
             return response()->json(['message' => 'Accès refusé'], 403);
         }
 
-        // Must have a profil
+        // Le profil est requis pour rattacher la candidature.
         if (!$user->profil) {
             return response()->json(['message' => 'Créez votre profil d\'abord'], 422);
         }
 
-        // Can't apply twice
+        // Une offre inactive ne doit plus accepter de candidature.
+        if (!$offre->actif) {
+            return response()->json(['message' => 'Cette offre n\'est plus active'], 422);
+        }
+
+        // Le couple offre/profil doit rester unique.
         $exists = Candidature::where('offre_id', $offre->id)
             ->where('profil_id', $user->profil->id)
             ->exists();
 
         if ($exists) {
             return response()->json(['message' => 'Vous avez déjà postulé à cette offre'], 422);
-        }
-
-        // Offre must be active
-        if (!$offre->actif) {
-            return response()->json(['message' => 'Cette offre n\'est plus active'], 422);
         }
 
         $request->validate([
@@ -50,16 +50,18 @@ class CandidatureController extends Controller
             'statut'    => 'en_attente',
         ]);
 
+        // Declenche l event pour journaliser la candidature via le listener.
         event(new CandidatureDeposee($candidature));
 
         return response()->json($candidature->load('offre'), 201);
     }
 
-    // GET /api/mes-candidatures
+    /** Liste les candidatures du candidat connecte. */
     public function mesCandidatures()
     {
         $user = auth()->user();
 
+        // Retour vide si le compte n a pas encore de profil candidat.
         if (!$user->profil) {
             return response()->json([]);
         }
@@ -72,12 +74,12 @@ class CandidatureController extends Controller
         return response()->json($candidatures);
     }
 
-    // GET /api/offres/{offre}/candidatures
+    /** Liste les candidatures recues pour une offre du recruteur. */
     public function candidaturesRecues(Offre $offre)
     {
         $user = auth()->user();
 
-        // Only the owner recruteur can see applications
+        // Regle d ownership: seul le proprietaire de l offre peut consulter.
         if ($offre->user_id !== $user->id) {
             return response()->json(['message' => 'Accès refusé'], 403);
         }
@@ -90,12 +92,12 @@ class CandidatureController extends Controller
         return response()->json($candidatures);
     }
 
-    // PATCH /api/candidatures/{candidature}/statut
+    /** Modifie le statut d une candidature par le recruteur proprietaire. */
     public function changerStatut(Request $request, Candidature $candidature)
     {
         $user = auth()->user();
 
-        // Only the recruteur who owns the offre
+        // Regle d ownership: seul le proprietaire de l offre peut modifier.
         if ($candidature->offre->user_id !== $user->id) {
             return response()->json(['message' => 'Accès refusé'], 403);
         }
@@ -107,6 +109,7 @@ class CandidatureController extends Controller
         $ancienStatut = $candidature->statut;
         $candidature->update(['statut' => $request->statut]);
 
+        // Declenche l event pour tracer le changement de statut.
         event(new StatutCandidatureMis($candidature, $ancienStatut));
 
         return response()->json($candidature);

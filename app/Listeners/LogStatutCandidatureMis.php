@@ -7,17 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 class LogStatutCandidatureMis
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
-     * Handle the event.
-     */
+    /** Ecrit dans le log les changements de statut de candidature. */
     public function handle(StatutCandidatureMis $event): void
     {
         $date         = now()->toDateTimeString();

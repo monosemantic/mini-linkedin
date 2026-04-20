@@ -8,13 +8,14 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    /** Cree un compte utilisateur puis retourne un token JWT. */
     public function register(Request $request)
     {
         $data = $request->validate([
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:6|confirmed',
-            'role' => 'sometimes|in:candidat,recruteur' // admin ne peut pas s'auto-inscrire
+            'role' => 'sometimes|in:candidat,recruteur' // Un admin ne peut pas s auto inscrire.
         ]);
 
         $user = User::create([
@@ -29,6 +30,7 @@ class AuthController extends Controller
         return $this->respondWithToken($token, $user, 201);
     }
 
+    /** Authentifie un utilisateur et retourne un token JWT. */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -43,17 +45,20 @@ class AuthController extends Controller
         return $this->respondWithToken($token, auth()->user());
     }
 
+    /** Retourne le profil de l utilisateur connecte. */
     public function me()
     {
         return response()->json(auth()->user());
     }
 
+    /** Invalide le token JWT courant. */
     public function logout()
     {
         auth()->logout();
         return response()->json(['message' => 'Déconnexion réussie']);
     }
 
+    /** Renouvelle le token JWT de l utilisateur connecte. */
     public function refresh()
     {
         return $this->respondWithToken(auth()->refresh(), auth()->user());

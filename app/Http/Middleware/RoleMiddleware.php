@@ -8,11 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
-     */
+    /** Traite la requete et verifie le role autorise. */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (!auth()->check()) {

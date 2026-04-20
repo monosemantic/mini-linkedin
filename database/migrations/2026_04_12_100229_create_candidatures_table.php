@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    /** Cree la table des candidatures. */
     public function up(): void
     {
         Schema::create('candidatures', function (Blueprint $table) {
@@ -17,14 +15,13 @@ return new class extends Migration
             $table->foreignId('profil_id')->constrained()->onDelete('cascade');
             $table->text('message')->nullable();
             $table->enum('statut', ['en_attente', 'acceptee', 'refusee'])->default('en_attente');
+            // Empeche un meme profil de postuler deux fois a la meme offre.
             $table->unique(['offre_id', 'profil_id']);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    /** Supprime la table des candidatures. */
     public function down(): void
     {
         Schema::dropIfExists('candidatures');

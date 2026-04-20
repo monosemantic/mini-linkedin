@@ -2,29 +2,22 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCompetenceRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+    /** Autorise la requete d ajout de competence au profil. */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
+    /** Retourne les regles de validation pour l ajout de competence. */
     public function rules(): array
     {
         return [
             'competence_id' => 'required|exists:competences,id',
-            'niveau' => 'required|in:debutant,intermediaire,expert'
+            'niveau' => 'required|in:debutant,intermediaire,expert',
         ];
     }
 }

@@ -20,18 +20,19 @@ class User extends Authenticatable implements JWTSubject
         'password' => 'hashed',
     ];
 
-    // JWT
+    // Retourne l identifiant principal utilise dans le token JWT.
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
+    // Ajoute le role dans les claims pour simplifier les controles d acces.
     public function getJWTCustomClaims(): array
     {
         return ['role' => $this->role];
     }
 
-    // Relations
+    // Relations Eloquent.
     public function profil()
     {
         return $this->hasOne(Profil::class);

@@ -7,13 +7,13 @@ use App\Models\Offre;
 
 class AdminController extends Controller
 {
-    // get /api/admin/users
+    /** Liste tous les utilisateurs pour l administration. */
     public function listUsers()
     {
         return response()->json(User::select('id', 'name', 'email', 'role', 'created_at')->get());
     }
 
-    // delete /api/admin/users
+    /** Supprime un utilisateur sauf si la regle admin l interdit. */
     public function deleteUser(User $user)
     {
         if ($user->id === auth()->id()) {
@@ -28,7 +28,7 @@ class AdminController extends Controller
         return response()->json(['message' => 'Utilisateur supprimé avec succès']);
     }
 
-    // patch /api/admin/offres
+    /** Active ou desactive une offre via l espace admin. */
     public function toggleOffre(Offre $offre)
     {
         $offre->actif = !$offre->actif;

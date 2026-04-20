@@ -560,7 +560,7 @@
             "header": [{ "key": "Accept", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"competence_id\": {{competence_id}}\n}",
+              "raw": "{\n    \"competence_id\": {{competence_id}},\n    \"niveau\": \"intermediaire\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {

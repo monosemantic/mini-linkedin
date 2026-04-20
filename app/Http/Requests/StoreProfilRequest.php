@@ -8,7 +8,7 @@ class StoreProfilRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // already handled by auth-api middleware
+        return true; // Deja gere par le middleware auth:api.
     }
 
     public function rules(): array

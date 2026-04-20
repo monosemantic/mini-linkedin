@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    /** Cree la table des profils candidats. */
     public function up(): void
     {
         Schema::create('profils', function (Blueprint $table) {
@@ -22,9 +20,7 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    /** Supprime la table des profils candidats. */
     public function down(): void
     {
         Schema::dropIfExists('profils');

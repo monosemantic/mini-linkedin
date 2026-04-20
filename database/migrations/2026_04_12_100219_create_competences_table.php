@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    /** Cree la table des competences. */
     public function up(): void
     {
         Schema::create('competences', function (Blueprint $table) {
@@ -19,9 +17,7 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    /** Supprime la table des competences. */
     public function down(): void
     {
         Schema::dropIfExists('competences');

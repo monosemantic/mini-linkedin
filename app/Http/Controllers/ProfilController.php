@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Profil;
 use App\Http\Requests\StoreProfilRequest;
 use App\Http\Requests\UpdateProfilRequest;
@@ -10,25 +9,20 @@ use App\Http\Requests\StoreCompetenceRequest;
 
 class ProfilController extends Controller
 {
+    /** Cree le profil du candidat connecte une seule fois. */
     public function store(StoreProfilRequest $request)
     {
         $user = auth()->user();
 
-        if (!$user) {
-            return response()->json(['message' => 'Non authentifié'], 401);
-        }
-
-        // vérifier que le profil existe
+        // Un utilisateur ne peut posseder qu un seul profil.
         if ($user->profil) {
             return response()->json([
                 'message' => 'Le profil existe déjà'
             ], 409);
         }
 
-        // valider en utilisant une requête de formulaire
         $data = $request->validated();
 
-        // remplir les données du profil
         $profilData = [
             "user_id" => $user->id,
             "titre" => $data["titre"],
@@ -36,10 +30,11 @@ class ProfilController extends Controller
             "localisation" => $data["localisation"] ?? null,
         ];
 
+        // array_key_exists preserve le false explicite envoye par le client.
         if (array_key_exists("disponible", $data)) {
             $profilData["disponible"] = $data["disponible"];
         }
-        // créer le profil
+
         $profil = Profil::create($profilData);
 
         return response()->json([
@@ -47,15 +42,11 @@ class ProfilController extends Controller
             'profil' => $profil
         ], 201);
     }
+
+    /** Retourne le profil du candidat connecte. */
     public function show()
     {
         $user = auth()->user();
-
-        if (!$user) {
-            return response()->json([
-                'message' => 'Non authentifié',
-            ], 401);
-        }
 
         $profil = $user->profil;
 
@@ -69,15 +60,12 @@ class ProfilController extends Controller
             'profil' => $profil
         ]);
     }
+
+    /** Met a jour le profil du candidat connecte. */
     public function update(UpdateProfilRequest $request)
     {
         $user = auth()->user();
 
-        if (!$user) {
-            return response()->json([
-                'message' => 'Non authentifié',
-            ], 401);
-        }
         $profil = $user->profil;
 
         if (!$profil) {
@@ -99,13 +87,11 @@ class ProfilController extends Controller
             'profil' => $profil
         ]);
     }
+
+    /** Ajoute une competence existante au profil avec son niveau. */
     public function addCompetence(StoreCompetenceRequest $request)
     {
         $user = auth()->user();
-
-        if (!$user) {
-            return response()->json(['message' => 'Non authentifié'], 401);
-        }
 
         $profil = $user->profil;
 
@@ -130,15 +116,11 @@ class ProfilController extends Controller
             'message' => 'Compétence ajoutée avec succès'
         ]);
     }
+
+    /** Retire une competence du profil du candidat connecte. */
     public function removeCompetence($competenceId)
     {
         $user = auth()->user();
-
-        if (!$user) {
-            return response()->json([
-                'message' => 'Non authentifié'
-            ], 401);
-        }
 
         $profil = $user->profil;
 

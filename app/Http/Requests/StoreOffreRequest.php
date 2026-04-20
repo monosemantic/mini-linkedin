@@ -6,9 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreOffreRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+    /** Autorise la requete de creation ou mise a jour d offre. */
     public function authorize()
     {
         return true;

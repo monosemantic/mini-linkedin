@@ -6,14 +6,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    /** Cree la table des offres. */
     public function up(): void
     {
         Schema::create('offres', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // recruteur
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Identifiant du recruteur proprietaire.
             $table->string('titre');
             $table->text('description');
             $table->string('localisation')->nullable();
@@ -23,9 +21,7 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    /** Supprime la table des offres. */
     public function down(): void
     {
         Schema::dropIfExists('offres');

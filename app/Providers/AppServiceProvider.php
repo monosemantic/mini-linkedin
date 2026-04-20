@@ -25,8 +25,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Evite les erreurs de longueur d index sur anciens environnements MySQL/MariaDB.
         Schema::defaultStringLength(191);
 
+        // Enregistre manuellement les listeners pour decoupler la logique des controllers.
         Event::listen(CandidatureDeposee::class, LogCandidatureDeposee::class);
         Event::listen(StatutCandidatureMis::class, LogStatutCandidatureMis::class);
     }
