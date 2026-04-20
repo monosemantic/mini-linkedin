@@ -1,58 +1,162 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# mini-linkedin
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST d'une plateforme de recrutement construite avec Laravel 11 et JWT.  
+Projet réalisé dans le cadre du cours Technologies Backend.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Prérequis
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- PHP >= 8.2
+- Composer
+- MySQL
+- [tymon/jwt-auth](https://github.com/tymondesigns/jwt-auth)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Installation
 
 ```bash
-composer require laravel/boost --dev
+# 1. Cloner le dépôt
+git clone https://github.com/<votre-username>/mini-linkedin.git
+cd mini-linkedin
 
-php artisan boost:install
+# 2. Installer les dépendances
+composer install
+
+# 3. Copier le fichier d'environnement
+cp .env.example .env
+
+# 4. Configurer la base de données dans .env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=mini_linkedin
+DB_USERNAME=root
+DB_PASSWORD=
+
+# 5. Générer les clés
+php artisan key:generate
+php artisan jwt:secret
+
+# 6. Lancer les migrations et le seeder
+php artisan migrate:fresh --seed
+
+# 7. Démarrer le serveur
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Données de test (seeder)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Le seeder génère : 2 admins, 5 recruteurs (2 à 3 offres chacun), 10 candidats (avec profil et compétences).  
+Le mot de passe de tous les comptes générés est `password`.
 
-## Code of Conduct
+Pour créer un compte manuellement :
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```
+POST /api/register
+{
+  "name": "...",
+  "email": "...",
+  "password": "password",
+  "password_confirmation": "password",
+  "role": "candidat" | "recruteur"
+}
+```
 
-## Security Vulnerabilities
+> Les comptes admin ne peuvent pas être créés via l'API.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## Récapitulatif des routes
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Authentification
+
+| Méthode | Route           | Accès    | Description         |
+|---------|-----------------|----------|---------------------|
+| POST    | `/api/register` | Public   | Créer un compte     |
+| POST    | `/api/login`    | Public   | Se connecter (JWT)  |
+| POST    | `/api/logout`   | Connecté | Se déconnecter      |
+| POST    | `/api/refresh`  | Connecté | Rafraîchir le token |
+| GET     | `/api/me`       | Connecté | Infos utilisateur   |
+
+### Profil
+
+| Méthode | Route                                    | Accès    | Description                          |
+|---------|------------------------------------------|----------|--------------------------------------|
+| POST    | `/api/profil`                            | Candidat | Créer son profil (une seule fois)    |
+| GET     | `/api/profil`                            | Candidat | Consulter son profil                 |
+| PUT     | `/api/profil`                            | Candidat | Modifier son profil                  |
+| POST    | `/api/profil/competences`                | Candidat | Ajouter une compétence (avec niveau) |
+| DELETE  | `/api/profil/competences/{competenceId}` | Candidat | Retirer une compétence               |
+
+### Offres d'emploi
+
+| Méthode | Route                 | Accès     | Description                                    |
+|---------|-----------------------|-----------|------------------------------------------------|
+| GET     | `/api/offres`         | Public    | Liste des offres actives (filtre + pagination) |
+| GET     | `/api/offres/{offre}` | Public    | Détail d'une offre                             |
+| POST    | `/api/offres`         | Recruteur | Créer une offre                                |
+| PUT     | `/api/offres/{offre}` | Recruteur | Modifier une offre (propriétaire uniquement)   |
+| DELETE  | `/api/offres/{offre}` | Recruteur | Supprimer une offre (propriétaire uniquement)  |
+
+Filtres disponibles sur `GET /api/offres` : `?localisation=Casablanca&type=CDI`  
+Pagination : 10 offres par page, triées par date de création.
+
+### Candidatures
+
+| Méthode | Route                                    | Accès     | Description                                       |
+|---------|------------------------------------------|-----------|---------------------------------------------------|
+| POST    | `/api/offres/{offre}/candidater`         | Candidat  | Postuler à une offre                              |
+| GET     | `/api/mes-candidatures`                  | Candidat  | Consulter ses propres candidatures                |
+| GET     | `/api/offres/{offre}/candidatures`       | Recruteur | Candidatures reçues (propriétaire uniquement)     |
+| PATCH   | `/api/candidatures/{candidature}/statut` | Recruteur | Changer le statut (en_attente, acceptee, refusee) |
+
+### Administration
+
+| Méthode | Route                       | Accès | Description                    |
+|---------|-----------------------------|-------|--------------------------------|
+| GET     | `/api/admin/users`          | Admin | Liste de tous les utilisateurs |
+| DELETE  | `/api/admin/users/{user}`   | Admin | Supprimer un compte            |
+| PATCH   | `/api/admin/offres/{offre}` | Admin | Activer / désactiver une offre |
+
+---
+
+## Events & Listeners
+
+Deux événements sont déclenchés automatiquement et loggés dans `storage/logs/candidatures.log` :
+
+- **CandidatureDeposee** — déclenché lors d'un dépôt de candidature. Enregistre la date, le nom du candidat et le titre de l'offre.
+- **StatutCandidatureMis** — déclenché lors d'un changement de statut. Enregistre la date, l'ancien statut et le nouveau statut.
+
+---
+
+## Structure du projet
+
+```
+app/
+├── Events/           # CandidatureDeposee, StatutCandidatureMis
+├── Listeners/        # LogCandidatureDeposee, LogStatutCandidatureMis
+├── Http/
+│   ├── Controllers/  # Auth, Profil, Offre, Candidature, Admin
+│   ├── Middleware/   # RoleMiddleware
+│   └── Requests/     # StoreOffreRequest, StoreProfilRequest, UpdateProfilRequest
+├── Models/           # User, Profil, Competence, Offre, Candidature
+└── Providers/        # AppServiceProvider (enregistrement des events)
+database/
+├── migrations/
+├── factories/
+└── seeders/
+postman/              # Collection Postman (.json)
+routes/
+└── api.php
+```
+
+---
+
+## Collection Postman
+
+Une collection Postman couvrant l'ensemble des endpoints est disponible dans le dossier `postman/`.  
+Elle inclut les scénarios suivants : inscription, connexion, CRUD profil, CRUD offres, candidature, changement de statut, ainsi que les cas d'erreur (401, 403, 422).
